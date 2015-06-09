@@ -65,12 +65,13 @@ for (idnum in list.ani){
     
     if (length(alllocs$x)>4){
       
-      #MCP
+      #MCP (uses all locations)
       cp<-mcp(alllocs,percent=mcp.per)
       cp$id<-uniqid
       writePolyShape(cp, paste0("utilization_distributions/",uniqid,"_mcp"))
       
       if(length(locs$x)>19){
+        #KDE (uses mean daily locations)
         #calculate x/y standard deviation ratio for KDE
         sd.x<-sd(locs$x)
         sd.y<-sd(locs$y)
