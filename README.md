@@ -20,3 +20,6 @@ The script requires a specific input file containing animal ID, track ID, date, 
 
 Experimental - utilization distributions based off of Delaunay triangulations. Requires alpha-functions.r script in working directory.
 
+**alpha-functions.r**
+
+Required functions for triangulated_utildists.r - for converting alpha shapes into spatial lines data frames.
