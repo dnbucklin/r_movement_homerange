@@ -16,3 +16,7 @@ This script creates 2 types of utilization distribution estimations from point l
 
 The script requires a specific input file containing animal ID, track ID, date, time, and X/Y coordinates. It outputs a summary of the run and shapefiles for each utilization distribution.
 
+**triangulated_utildists.r**
+
+Experimental - utilization distributions based off of Delaunay triangulations. Requires alpha-functions.r script in working directory.
+
