@@ -70,7 +70,7 @@ confun <- function(x, par){
   return(res)
 }
 
-### IF loop gets stuck and is taking too long for one animal (probably due to the number of points/size of constraint polygon), hit escape to end process.
+### IF loop gets stuck and is taking too long for one animal (probably due to the number of points and/or the size of constraint polygon), hit escape to end process.
 ### You can restart the loop on the next animal by running all code below with the subset not yet run - set this by modifying the
 ### for (ani in list.ani){ ### line (5 lines down) to include just that subset 
 ### - for example, ## for (ani in list.ani[37:43]){ ## would run for animals 37-43 in the list.
