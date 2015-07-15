@@ -84,7 +84,7 @@ for (idnum in list.ani){
         
         #KDE *what grid number to choose (grid ?) *this is number of cells for longest direction*
         kde<-kernelUD(locs.kde,h = "LSCV",grid=1000)
-        h.val<-c(uniqid,length(locs$x),rat.xy,kde@h$convergence,kde@h$h)
+        h.val<-c(uniqid,length(alllocs$x),length(locs$x),round(rat.xy,3),kde@h$convergence,round(kde@h$h,4))
         print(h.val)
         vud <- getvolumeUD(kde)
         
@@ -100,7 +100,7 @@ for (idnum in list.ani){
         print("Using transformed coordinates")
         
         kde<-kernelUD(locs.kde,h = "LSCV",grid=1000)
-        h.val<-c(uniqid,length(locs$x),rat.xy,kde@h$convergence,kde@h$h)
+        h.val<-c(uniqid,length(alllocs$x),length(locs$x),round(rat.xy,3),kde@h$convergence,round(kde@h$h,4))
         print(h.val)
         vud <- getvolumeUD(kde)
         
