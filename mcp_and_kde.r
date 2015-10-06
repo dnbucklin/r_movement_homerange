@@ -25,7 +25,7 @@ data1<-read.table("file.txt",header=T)                          #######CHANGE TH
 
 #standard deviation ratio settings for rescaling KDEs
 sd.ratio.min<-0.5     #######CHANGE THIS - OPTIONAL#########
-sd.ratio.max<-1.5     #######CHANGE THIS - OPTIONAL#########
+sd.ratio.max<-2       #######CHANGE THIS - OPTIONAL#########
 
 #MCP percentage (0 - 100)
 mcp.per<-100			#######CHANGE THIS - OPTIONAL#########
