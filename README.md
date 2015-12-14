@@ -8,7 +8,9 @@ This script compares animal movement trajectories to a set of randomly generated
 
 It takes inputs of animal locations and a shapefile with one polygon which represents the area available to the animal (this constrains the random walks). Plots are output displaying the trajectory and random walks, and a output table with r-squared, linearity, and p-values for each track.
 
+####Home range estimators
 
+Note: these tools can be accessed in a shiny web-app [here](https://dbshiny.shinyapps.io/hr_explorer).
 
 **mcp_and_kde.r**
 
