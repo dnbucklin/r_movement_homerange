@@ -88,12 +88,17 @@ for (idnum in list.ani){
         print(h.val)
         vud <- getvolumeUD(kde)
         
-        #export 50/95% UDs
-        hr50 <- getverticeshr(kde,percent=50,ida="kde50")
-        hr50$id<-uniqid
-        hr95 <- getverticeshr(kde,percent=95,ida="kde95")
-        hr95$id<-uniqid
-        writePolyShape(spRbind(hr95,hr50), paste0("utilization_distributions/",uniqid,"_kde"))
+        #get kernel density volume 
+        fud <- vud[[1]]
+        hr<-as.data.frame(fud)[,1]
+        
+        hr2<-data.frame(hr)
+        ka<-data.frame(x=(coordinates(vud)[,1]),y=(coordinates(vud)[,2]),z=hr2)
+        kb<-rasterFromXYZ(ka,digits=8)
+        kc<-rasterToContour(kb,maxpixels=3000000,levels=c(50,95))
+        kc$id<-uniqid
+        writeLinesShape(kc, paste0("utilization_distributions/",uniqid,"_kde"))
+        #
         capture.output(h.val,file="utilization_distributions/ud_output.txt",append=T)}
         
         else {locs.kde<-SpatialPoints(data.frame(x=locs$x/sd.x,y=locs$y/sd.y)) 
@@ -110,7 +115,7 @@ for (idnum in list.ani){
         
         hr2<-data.frame(hr)
         ka<-data.frame(x=(coordinates(vud)[,1])*sd.x,y=(coordinates(vud)[,2])*sd.y,z=hr2)
-        kb<-rasterFromXYZ(ka)
+        kb<-rasterFromXYZ(ka,digits=8)
         kc<-rasterToContour(kb,maxpixels=3000000,levels=c(50,95))
         kc$id<-uniqid
         writeLinesShape(kc, paste0("utilization_distributions/",uniqid,"_kde"))
