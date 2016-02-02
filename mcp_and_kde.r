@@ -18,10 +18,10 @@ library(rgeos)
 
 ######CHANGE SETTINGS SECTION########
 #working directory - folder containing input data and where to export results. Set below
-setwd("C:/Users/dbucklin/Desktop/test")           #######CHANGE THIS#########
+setwd("C:/folder")           #######CHANGE THIS#########
 
 #load data table - this file should be in your working directory
-data1<-read.table("all_3_red.txt",header=T)                          #######CHANGE THIS#########
+data1<-read.table("table.txt",header=T)                          #######CHANGE THIS#########
 
 #standard deviation ratio settings for rescaling KDEs
 sd.ratio.min<-0.5     #######CHANGE THIS - OPTIONAL#########
@@ -185,7 +185,7 @@ for (idnum in list.ani){
         eval(parse(text=str))
         #end hole removal
         
-        writePolyShape(kde.out, paste0("utilization_distributions/",uniqid,"_kdepoly"))
+        writePolyShape(kde.out, paste0("utilization_distributions/",uniqid,"_kde"))
         
       } else {
         capture.output(c(uniqid,length(alllocs$x),length(locs$x)),file="utilization_distributions/ud_output.txt",append=T)
