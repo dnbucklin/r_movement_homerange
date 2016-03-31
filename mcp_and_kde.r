@@ -28,7 +28,10 @@ sd.ratio.min<-0.5     #######CHANGE THIS - OPTIONAL#########
 sd.ratio.max<-2       #######CHANGE THIS - OPTIONAL#########
 
 #MCP percentage (0 - 100)
-mcp.per<-100			#######CHANGE THIS - OPTIONAL#########
+mcp.per<-100  		#######CHANGE THIS - OPTIONAL#########
+
+#KDE percentages
+kde.per<-c(25,50,95)
 ######END CHANGE SETTINGS SECTION########
 
 
@@ -80,55 +83,55 @@ for (idnum in list.ani){
         
         #if ratio is >0.5 or <1.5, use regular locations, otherwise divide by standard devation
         if (rat.xy > sd.ratio.min & rat.xy < sd.ratio.max)  {locs.kde<-locs
-        print("Using regular coordinates")
-        
-        #KDE *what grid number to choose (grid ?) *this is number of cells for longest direction*
-        kde<-kernelUD(locs.kde,h = "LSCV",grid=1000)
-        h.val<-c(uniqid,length(alllocs$x),length(locs$x),round(rat.xy,3),kde@h$convergence,round(kde@h$h,4))
-        print(h.val)
-        vud <- getvolumeUD(kde)
-        
-        #get kernel density volume 
-        fud <- vud[[1]]
-        hr<-as.data.frame(fud)[,1]
-        
-        hr2<-data.frame(hr)
-        ka<-data.frame(x=(coordinates(vud)[,1]),y=(coordinates(vud)[,2]),z=hr2)
-        kb<-rasterFromXYZ(ka,digits=8)
-        kc<-rasterToContour(kb,maxpixels=3000000,levels=c(50,95))
-        kc$id<-uniqid
-      
-        #writeLinesShape(kc, paste0("utilization_distributions/",uniqid,"_kde"))
-        #for KDE line output, uncomment above
-        capture.output(h.val,file="utilization_distributions/ud_output.txt",append=T)}
+                                                             print("Using regular coordinates")
+                                                             
+                                                             #KDE *what grid number to choose (grid ?) *this is number of cells for longest direction*
+                                                             kde<-kernelUD(locs.kde,h = "LSCV",grid=1000)
+                                                             h.val<-c(uniqid,length(alllocs$x),length(locs$x),round(rat.xy,3),kde@h$convergence,round(kde@h$h,4))
+                                                             print(h.val)
+                                                             vud <- getvolumeUD(kde)
+                                                             
+                                                             #get kernel density volume 
+                                                             fud <- vud[[1]]
+                                                             hr<-as.data.frame(fud)[,1]
+                                                             
+                                                             hr2<-data.frame(hr)
+                                                             ka<-data.frame(x=(coordinates(vud)[,1]),y=(coordinates(vud)[,2]),z=hr2)
+                                                             kb<-rasterFromXYZ(ka,digits=8)
+                                                             kc<-rasterToContour(kb,maxpixels=3000000,levels=kde.per)
+                                                             kc$id<-uniqid
+                                                             
+                                                             #writeLinesShape(kc, paste0("utilization_distributions/",uniqid,"_kde"))
+                                                             #for KDE line output, uncomment above
+                                                             capture.output(h.val,file="utilization_distributions/ud_output.txt",append=T)}
         
         else {locs.kde<-SpatialPoints(data.frame(x=locs$x/sd.x,y=locs$y/sd.y)) 
-        print("Using transformed coordinates")
-        
-        kde<-kernelUD(locs.kde,h = "LSCV",grid=1000)
-        h.val<-c(uniqid,length(alllocs$x),length(locs$x),round(rat.xy,3),kde@h$convergence,round(kde@h$h,4))
-        print(h.val)
-        vud <- getvolumeUD(kde)
-        
-        #get kernel density volume 
-        fud <- vud[[1]]
-        hr<-as.data.frame(fud)[,1]
-        
-        hr2<-data.frame(hr)
-        ka<-data.frame(x=(coordinates(vud)[,1])*sd.x,y=(coordinates(vud)[,2])*sd.y,z=hr2)
-        kb<-rasterFromXYZ(ka,digits=8)
-        kc<-rasterToContour(kb,maxpixels=3000000,levels=c(50,95))
-        kc$id<-uniqid
-        
-        #writeLinesShape(kc, paste0("utilization_distributions/",uniqid,"_kde"))
-        #for KDEline output, uncomment above
-        print(u)
-        capture.output(h.val,file="utilization_distributions/ud_output.txt",append=T)
+              print("Using transformed coordinates")
+              
+              kde<-kernelUD(locs.kde,h = "LSCV",grid=1000)
+              h.val<-c(uniqid,length(alllocs$x),length(locs$x),round(rat.xy,3),kde@h$convergence,round(kde@h$h,4))
+              print(h.val)
+              vud <- getvolumeUD(kde)
+              
+              #get kernel density volume 
+              fud <- vud[[1]]
+              hr<-as.data.frame(fud)[,1]
+              
+              hr2<-data.frame(hr)
+              ka<-data.frame(x=(coordinates(vud)[,1])*sd.x,y=(coordinates(vud)[,2])*sd.y,z=hr2)
+              kb<-rasterFromXYZ(ka,digits=8)
+              kc<-rasterToContour(kb,maxpixels=3000000,levels=kde.per)
+              kc$id<-uniqid
+              
+              #writeLinesShape(kc, paste0("utilization_distributions/",uniqid,"_kde"))
+              #for KDEline output, uncomment above
+              print(u)
+              capture.output(h.val,file="utilization_distributions/ud_output.txt",append=T)
         } 
         
         #begin hole removal
         ct<-0
-        vertsort<-c(95,50)
+        vertsort<-sort(kde.per,decreasing=T)
         #loop through each KDE level
         for (lev in vertsort) {
           ct<-ct+1
