@@ -9,8 +9,8 @@
 #######
 
 #change table input and output files, and then run rest of the code
-input_table<-"N:/Kemps_ridley_internesting/3_randwalk_ud_allproj_6_2014/all_turtles_6_2014.txt"
-output_shapefile<-"C:/folder/test2"
+input_table<-"/input_file.txt"
+output_shapefile<-"C:/output_folder/output_shapefile"
 ##########
 
 #load libraries
