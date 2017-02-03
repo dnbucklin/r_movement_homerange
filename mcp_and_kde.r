@@ -1,4 +1,5 @@
-#R code for Utilization distributions (MCP, KDE)
+## R code for Utilization distributions (MCP, KDE)
+## 2/3/2017
 
 #load packages (make sure they are installed first)
 library(ade4)
@@ -16,27 +17,39 @@ library(rgeos)
 ## POINT_Y - y spatial coordiante
 #######
 
-######CHANGE SETTINGS SECTION########
+############################################
+####CHANGE SETTINGS IN THIS SECTION#########
+#####RUN THIS SECTION FIRST#################
+
 #working directory - folder containing input data and where to export results. Set below
 setwd("C:/folder")           #######CHANGE THIS#########
 
 #load data table - this file should be in your working directory
-data1<-read.table("table.txt",header=T)                          #######CHANGE THIS#########
+data1<-read.table("file.txt",header=T)                          #######CHANGE THIS#########
 
-#standard deviation ratio settings for rescaling KDEs
-sd.ratio.min<-0.5     #######CHANGE THIS - OPTIONAL#########
-sd.ratio.max<-2       #######CHANGE THIS - OPTIONAL#########
+# standard deviation ratio settings for rescaling KDEs 
+# if one dimension (x/y) is skewed more than [sd.ratio] times the other, KDEs will be rescaled
+# minimum value is 1 (rescale all KDEs)
+sd.ratio <- 2 #######CHANGE THIS - OPTIONAL#########
 
 #MCP percentage (0 - 100)
 mcp.per<-100  		#######CHANGE THIS - OPTIONAL#########
 
 #KDE percentages
 kde.per<-c(25,50,95)
-######END CHANGE SETTINGS SECTION########
+
+############################################
+####END CHANGE SETTINGS SECTION#############
+############################################
+##RUN REST OF CODE IF THERE ARE NO ERRORS###
 
 
 #######RUN rest of code########
 dir.create("utilization_distributions")
+
+# set min and max sd.ratio for KDE rescaling
+sd.ratio.min<-1/sd.ratio     
+sd.ratio.max<-1*sd.ratio
 
 head<-c("unique_id","num_total_locs","num_meandailylocs","ratio_xy","lscv_converge","lscv_h")
 capture.output(head,file="utilization_distributions/ud_output.txt",append=T)

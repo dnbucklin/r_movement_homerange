@@ -1,5 +1,5 @@
-##Site fidelity tests
-##All animals in one text file, they must share the same projection
+## Site fidelity tests
+## 2/3/2017
 
 #######To run this code, you need to have a data file (in text format) with at least the following columns (using the exact names below):
 ## ID - unique animal ID
@@ -9,6 +9,8 @@
 ## POINT_X - x spatial coordinate
 ## POINT_Y - y spatial coordiante
 #######
+
+## All animals in one text file, they must share the same projection
 
 #load libraries
 library(adehabitatLT)
@@ -23,37 +25,51 @@ library(maptools)
 #####RUN THIS SECTION FIRST#################
 
 ## working directory - make a new folder containing the input file and constraining shapefile. This is also where results are generated. Set below.
-setwd("/directory")           #######CHANGE THIS#########
+setwd("C:/folder")          #######CHANGE THIS#########
 
 ## load data table - this file should be in your working directory
-data1<-read.table("file.txt",header=T)            #######CHANGE THIS#########
+data1<-read.table("file.txt",header=T)               #######CHANGE THIS#########
 
 ## How many random walks per animal track? Set below
 rw.num<-100                                               #######CHANGE THIS#########
 
-# Plot limit distance (in projection units - set to ~1 if using lat/lon, set to ~100000 if using meters)
+## Plot limit distance (in projection units - set to ~1 if using lat/lon coordinates, set to ~100000 if using meters)
 d<-100000       #######CHANGE THIS#########
+
+## can random walk trajectories cross outside constraining polygon? (points making up trajectory are not allowed outside)
+## not allowing lines outside (FALSE) will cause tests to run slower
+cross<-FALSE
 
 ## Constraint function shapefile (to restrict random walks from going outside certain areas)
 ## The shapefile should indicate where the animal CAN go, and all points MUST fall inside it (code checks this below)
 ## It must be in the same projection as your points
-## Make sure the shapefile contains one feature and has an attribute with any real value (not NA)
+par<-readShapePoly("shapefile")     #######CHANGE THIS (last one)#########
 
-par<-readShapePoly("shapefile_name")     #######CHANGE THIS (last one)#########
+############################################
+#### END CHANGE SETTINGS SECTION ###########
+############################################
+
+##########################################################################
+### THIS SECTION CHECKS IF POINTS OVERLAP CONSTRAINT POLYGON #############
+##########################################################################
+
+# add attribute to par
+par@data<-data.frame(x = 1)
+
+## run the checks below (until END CHANGE SETTINGS SECTION) prior to running rest of code
 check<-over(SpatialPoints(cbind(data1$POINT_X,data1$POINT_Y)),par)
 check.2 <- all(!is.na(check))
-plot(SpatialPoints(cbind(data1$POINT_X,data1$POINT_Y)))
-
-dir.create("site_fidelity")
+if (!check.2) {print(paste0("ERROR: ",sum(is.na(check))," of ",length(check[,1])," points in the tracks fall outside the bounding polygon. Remove them before running this code"))} else {print("Data are ready")}
 
 plot(SpatialPoints(cbind(data1$POINT_X,data1$POINT_Y)))
 plot(par,add=TRUE)
-if (check.2 == FALSE) {print("Some points in the tracks fall outside the bounding polygon - remove them before running this code")} else {print("Data are ready")}
 
-############################################
-####END CHANGE SETTINGS SECTION#############
-############################################
-##RUN REST OF CODE IF THERE ARE NO ERRORS###
+##########################################################################
+#### END CHECK SECTION ###################################################
+##########################################################################
+## RUN REST OF CODE IF THERE ARE NO ERRORS ###############################
+
+dir.create("site_fidelity")
 
 col.names<-c("ani_id","num_relocations","r2","mean_r2_RW","r2_pval","linearity","mean_lin_RW","lin_pval")
 capture.output(col.names,file="site_fidelity/random_walk_results.txt",append=T)
@@ -62,10 +78,19 @@ capture.output(col.names,file="site_fidelity/random_walk_results.txt",append=T)
 confun <- function(x, par){
   ## Define a SpatialPointsDataFrame from the trajectory
   coordinates(x) <- x[,1:2]
-  ## overlap the relocations x to the map par
+  
+  ## overlap the relocations x to the map par (use for points)
   jo<-over(x,par)
   ## checks that there are no missing value
   res <- all(!is.na(jo))
+  
+  if (!cross & res) {
+    #define spatiallines (use for lines)
+    spl<-as(x,"SpatialLines")
+    res <- gContains(par, spl) # gContains allows spl to intersect boundary of par
+    # gContainsProperly would disallow boundary touching
+  }
+  
   ## return this check
   return(res)
 }
@@ -112,7 +137,14 @@ for (ani in list.ani){
     
     #make plot
     png(file = paste0("site_fidelity/",animal,"_plot.png"),pointsize=12,width=1000,height=1000)
-    plot(turt[an],spoldf=par,xlim=c(min(turt[[an]]$x)-d,max(turt[[an]]$x)+d),ylim=c(min(turt[[an]]$y)-d,max(turt[[an]]$y)+d),main=paste0(ani," tracks"))
+    
+    #xlim<-c(bbox(par)[1,1],bbox(par)[1,2])
+    #ylim<-c(bbox(par)[2,1],bbox(par)[2,2])
+    
+    xlim<-c(min(turt[[an]]$x)-d,max(turt[[an]]$x)+d)
+    ylim<-c(min(turt[[an]]$y)-d,max(turt[[an]]$y)+d)
+    
+    plot(turt[an],spoldf=par, xlim=xlim, ylim=ylim,main=paste0(ani," tracks"))
     
     meanx.t<-mean(track.t$x)
     meany.t<-mean(track.t$y)
@@ -136,7 +168,7 @@ for (ani in list.ani){
       start<-track[1,][1:2]
       end<-track[length(track[,1]),][1:2]
       lin<-(dist(rbind(start,end)))/leng    #linearity of simulated track (distance from start to finish / total distance)
-      lines(rand[[an]][[i]]$x,rand[[an]][[i]]$y,col="grey50") #plots the random walk line on the graph
+      lines(rand[[an]][[i]]$x,rand[[an]][[i]]$y,col="grey60") #plots the random walk line on the graph
       
       foo.r2[i]<-r2
       foo.lin[i]<-lin
@@ -156,7 +188,7 @@ for (ani in list.ani){
     #save result p-values
     vect<-c(animal,relocs,round(c(r2.true,mean.r2,mc.r2$pvalue,lin.true,mean.lin,mc.lin$pvalue),7))
     capture.output(vect,file="site_fidelity/random_walk_results.txt",append=T)
-    lines(track.t$x,track.t$y,col="black")
+    lines(track.t$x,track.t$y,col="black", lwd = 3)
     
     dev.off()
     plot.new()
