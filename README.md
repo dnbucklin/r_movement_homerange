@@ -18,7 +18,7 @@ Note: these tools can be accessed in a shiny web-app [here](https://dbshiny.shin
 
 **[mcp_and_kde.r](https://github.com/dnbucklin/r_movement_homerange/blob/master/mcp_and_kde.r)**
 
-This script creates 2 types of utilization distribution estimations from point locations, minimum convex polygon (also know as convex hull) and kernel density estimation. It uses mainly functions from the adehabitatHR package, with some customization to allow for rescaling of locations prior to kernel density estimation, replicating the option in the Kernel Density Estimation tool in the Home Range Tools extension developed for ArcView and ArcGIS 9 (http://flash.lakeheadu.ca/~arodgers/hre/).
+This script creates 2 types of utilization distribution estimations from point locations, minimum convex polygon (also know as convex hull) and kernel density estimation. It uses mainly functions from the adehabitatHR package, with some customization to allow for rescaling of locations prior to kernel density estimation, replicating the option in the Kernel Density Estimation tool in the Home Range Tools extension developed for ArcView and ArcGIS 9 (http://flash.lakeheadu.ca/~arodgers/hre/); see the HRT manual [here](http://flash.lakeheadu.ca/~arodgers/hre/HRT%20Users%20Manual%20Draft%20August%2010%202011.pdf).
 
 The script requires a specific input file containing animal ID, track ID, date, time, and X/Y coordinates. It outputs a summary of the run and shapefiles for each utilization distribution.
 
