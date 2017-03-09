@@ -108,7 +108,7 @@ for (idnum in list.ani){
         rat.xy<-sd.x/sd.y
         print(rat.xy)
         
-        #if ratio is >0.5 or <1.5, use regular locations, otherwise divide by standard devation
+        #if ratio is within specified limits, use regular locations, otherwise divide by standard devation
         if (rat.xy > sd.ratio.min & rat.xy < sd.ratio.max)  {locs.kde<-locs
                                                              print("Using regular coordinates")
                                                              
