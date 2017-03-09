@@ -1,5 +1,5 @@
 ## R code for Utilization distributions (MCP, KDE)
-## 2/3/2017
+## 3/9/2017
 
 #load packages (make sure they are installed first)
 library(ade4)
@@ -7,6 +7,7 @@ library(adehabitatHR)
 library(maptools)
 library(raster)
 library(rgeos)
+library(rgdal)
 
 #######To run this code, you need to have a data file (in text format) with the following columns (using the exact names below (all uppercase)):
 ## ID - unique animal ID
@@ -54,6 +55,7 @@ sd.ratio.max<-1*sd.ratio
 head<-c("unique_id","num_total_locs","num_meandailylocs","ratio_xy","lscv_converge","lscv_h")
 capture.output(head,file="utilization_distributions/ud_output.txt",append=T)
 
+ctr<-0
 list.ani<-unique(data1$ID)
 print(list.ani)
 
@@ -64,6 +66,7 @@ for (idnum in list.ani){
   
   for (u in unique(data$TID)){
     
+    ctr<-ctr+1
     #subset data for unique animal track
     ani<-subset(data,data$TID==u)
     uniqid<-paste0(idnum,"_",gsub("/","_",u))
@@ -72,10 +75,20 @@ for (idnum in list.ani){
     #calcuate mean daily locations
     mdl<-aggregate(cbind(ani$POINT_X,ani$POINT_Y),by=list(ani$DATE),FUN="mean")
     mdl.out<-cbind(uniqid,mdl)
-    write.table(mdl.out,file="mean_daily_locs_all.txt",append=T,col.names=F,row.names=F)
+    names(mdl.out)<-c("uniq_ID","date","point_x","point_y")
+    
+    # create output SPDF/text file for mdls, write mdls to text file
+    if (ctr == 1) {
+      write.table(mdl.out,file="mean_daily_locs_all.txt",append=F,col.names=T,row.names=F) 
+      mdl.shp <- SpatialPointsDataFrame(data.frame(x=mdl.out$point_x,y=mdl.out$point_y), data = mdl.out)
+    } else {
+      write.table(mdl.out,file="mean_daily_locs_all.txt",append=T,col.names=F,row.names=F)
+      mdl.shp <- rbind(mdl.shp, SpatialPointsDataFrame(data.frame(x=mdl.out$point_x,y=mdl.out$point_y), data = mdl.out))
+    }
+    
     print(paste0(length(mdl[,1])," mean daily locations."))
     
-    #make spatial data frame with mean daily locations
+    #make spatialpoints with mean daily locations, and all points
     locs<-SpatialPoints(data.frame(x=mdl$V1,y=mdl$V2))
     alllocs<-SpatialPoints(data.frame(x=ani$POINT_X,y=ani$POINT_Y))
     
@@ -84,7 +97,8 @@ for (idnum in list.ani){
       #MCP (uses all locations)
       cp<-mcp(alllocs,percent=mcp.per)
       cp$id<-uniqid
-      writePolyShape(cp, paste0("utilization_distributions/",uniqid,"_mcp"))
+      #writePolyShape(cp, paste0("utilization_distributions/",uniqid,"_mcp")) #maptools method
+      writeOGR(cp,  dsn="utilization_distributions", layer = paste0(uniqid,"_mcp"), driver = "ESRI Shapefile")
       
       if(length(locs$x)>19){
         #KDE (uses mean daily locations)
@@ -114,7 +128,7 @@ for (idnum in list.ani){
                                                              kc<-rasterToContour(kb,maxpixels=3000000,levels=kde.per)
                                                              kc$id<-uniqid
                                                              
-                                                             #writeLinesShape(kc, paste0("utilization_distributions/",uniqid,"_kde"))
+                                                             #writeOGR(kc,  dsn="utilization_distributions", layer = paste0(uniqid,"_kde"), driver = "ESRI Shapefile")
                                                              #for KDE line output, uncomment above
                                                              capture.output(h.val,file="utilization_distributions/ud_output.txt",append=T)}
         
@@ -136,7 +150,7 @@ for (idnum in list.ani){
               kc<-rasterToContour(kb,maxpixels=3000000,levels=kde.per)
               kc$id<-uniqid
               
-              #writeLinesShape(kc, paste0("utilization_distributions/",uniqid,"_kde"))
+              #writeOGR(kc,  dsn="utilization_distributions", layer = paste0(uniqid,"_kde"), driver = "ESRI Shapefile")
               #for KDEline output, uncomment above
               print(u)
               capture.output(h.val,file="utilization_distributions/ud_output.txt",append=T)
@@ -201,7 +215,8 @@ for (idnum in list.ani){
         eval(parse(text=str))
         #end hole removal
         
-        writePolyShape(kde.out, paste0("utilization_distributions/",uniqid,"_kde"))
+        #writePolyShape(kde.out, paste0("utilization_distributions/",uniqid,"_kde")) #maptools method
+        writeOGR(kde.out,  dsn="utilization_distributions", layer = paste0(uniqid,"_kde"), driver = "ESRI Shapefile")
         
       } else {
         capture.output(c(uniqid,length(alllocs$x),length(locs$x)),file="utilization_distributions/ud_output.txt",append=T)
@@ -213,5 +228,5 @@ for (idnum in list.ani){
   }
   
 }
-
+writeOGR(mdl.shp, dsn="utilization_distributions", layer = "mean_daily_locs_all", driver = "ESRI Shapefile")
 save.image("utilization_distributions/ud_rWorkspace.Rdata")
