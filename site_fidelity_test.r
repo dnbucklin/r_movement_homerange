@@ -19,6 +19,7 @@ library(raster)
 library(rgeos)
 library(stats)
 library(maptools)
+library(rgdal)
 
 ############################################
 ####CHANGE SETTINGS IN THIS SECTION#########
@@ -43,7 +44,7 @@ cross<-FALSE
 ## Constraint function shapefile (to restrict random walks from going outside certain areas)
 ## The shapefile should indicate where the animal CAN go, and all points MUST fall inside it (code checks this below)
 ## It must be in the same projection as your points
-par<-readShapePoly("shapefile")     #######CHANGE THIS (last one)#########
+par<-readOGR(getwd(),"shapefile")     #######CHANGE THIS (last one)#########
 
 ############################################
 #### END CHANGE SETTINGS SECTION ###########
@@ -57,7 +58,7 @@ par<-readShapePoly("shapefile")     #######CHANGE THIS (last one)#########
 par@data<-data.frame(x = 1)
 
 ## run the checks below (until END CHANGE SETTINGS SECTION) prior to running rest of code
-check<-over(SpatialPoints(cbind(data1$POINT_X,data1$POINT_Y)),par)
+check<-over(SpatialPoints(cbind(data1$POINT_X,data1$POINT_Y), proj4string = par@proj4string),par)
 check.2 <- all(!is.na(check))
 if (!check.2) {print(paste0("ERROR: ",sum(is.na(check))," of ",length(check[,1])," points in the tracks fall outside the bounding polygon. Remove them before running this code"))} else {print("Data are ready")}
 
@@ -77,7 +78,9 @@ capture.output(col.names,file="site_fidelity/random_walk_results.txt",append=T)
 ##constraint function for limiting area of movement on random walks
 confun <- function(x, par){
   ## Define a SpatialPointsDataFrame from the trajectory
+  p4s<-CRS(proj4string(par))
   coordinates(x) <- x[,1:2]
+  x@proj4string <- p4s
   
   ## overlap the relocations x to the map par (use for points)
   jo<-over(x,par)
@@ -113,7 +116,7 @@ for (ani in list.ani){
   data<-data[!duplicated(data[,c("ID","da")]),]
   turt <- as.ltraj(xy = data[,c("POINT_X","POINT_Y")], date = data$da, id = as.character(data$ID),burst=paste0(data$ID,".",data$TID))
   
-  #set up correlated random walks, with randomized angles, randomized distances, fixed starting point
+  #set up correlated random walks, with randomized angles, non-randomized distances, fixed starting point
   mos<-NMs.randomCRW(turt, rangles = TRUE, rdist = FALSE, fixedStart = TRUE,
                      x0 = NULL, rx = NULL, ry = NULL, treatment.func = NULL,
                      treatment.par = NULL, constraint.func = confun,
@@ -178,11 +181,11 @@ for (ani in list.ani){
     print(paste0("Animal ID: ",animal))
     
     mean.r2<-mean(foo.r2)
-    mc.r2<-as.randtest(foo.r2,r2.true,alter="greater") #monte carlo test
+    mc.r2<-as.randtest(foo.r2,r2.true,alter="less") #p-value test
     #print(mc.r2)
     
     mean.lin<-mean(foo.lin)
-    mc.lin<-as.randtest(foo.lin,lin.true,alter="greater") #monte carlo test
+    mc.lin<-as.randtest(foo.lin,lin.true,alter="less") #p-value test
     #print(mc.lin)
     
     #save result p-values
