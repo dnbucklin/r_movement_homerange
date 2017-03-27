@@ -97,6 +97,8 @@ for (idnum in list.ani){
       #MCP (uses all locations)
       cp<-mcp(alllocs,percent=mcp.per)
       cp$id<-uniqid
+      cp$percent <- mcp.per
+      cp$type <- "MCP"
       #writePolyShape(cp, paste0("utilization_distributions/",uniqid,"_mcp")) #maptools method
       writeOGR(cp,  dsn="utilization_distributions", layer = paste0(uniqid,"_mcp"), driver = "ESRI Shapefile")
       
@@ -216,6 +218,7 @@ for (idnum in list.ani){
         #end hole removal
         
         #writePolyShape(kde.out, paste0("utilization_distributions/",uniqid,"_kde")) #maptools method
+        kde.out@data <- data.frame(id = uniqid, level = kde.out$level, type = "KDE")
         writeOGR(kde.out,  dsn="utilization_distributions", layer = paste0(uniqid,"_kde"), driver = "ESRI Shapefile")
         
       } else {
