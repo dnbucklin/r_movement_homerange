@@ -71,9 +71,8 @@ plot(par,add=TRUE)
 ## RUN REST OF CODE IF THERE ARE NO ERRORS ###############################
 
 dir.create("site_fidelity")
-
-col.names<-c("ani_id","num_relocations","r2","mean_r2_RW","r2_pval","linearity","mean_lin_RW","lin_pval")
-capture.output(col.names,file="site_fidelity/random_walk_results.txt",append=T)
+dat.out<-data.frame(ani_id=0,num_relocations=0,r2=0,mean_r2_RW=0,r2_pval=0,r2_prop_gt_observed=0,linearity=0,mean_lin_RW=0,lin_pval=0,lin_prop_gt_observed=0)
+write.table(dat.out[0,],file="site_fidelity/random_walk_results.txt")
 
 ##constraint function for limiting area of movement on random walks
 confun <- function(x, par){
@@ -181,16 +180,20 @@ for (ani in list.ani){
     print(paste0("Animal ID: ",animal))
     
     mean.r2<-mean(foo.r2)
+    prop.r2.gt <- as.integer(table(r2.true<foo.r2)["TRUE"])/rw.num #proportion greater than the observed value 
     mc.r2<-as.randtest(foo.r2,r2.true,alter="less") #p-value test
     #print(mc.r2)
     
     mean.lin<-mean(foo.lin)
+    prop.lin.gt <- as.integer(table(lin.true<foo.lin)["TRUE"])/rw.num #proportion greater than the observed value 
     mc.lin<-as.randtest(foo.lin,lin.true,alter="less") #p-value test
     #print(mc.lin)
     
     #save result p-values
-    vect<-c(animal,relocs,round(c(r2.true,mean.r2,mc.r2$pvalue,lin.true,mean.lin,mc.lin$pvalue),7))
-    capture.output(vect,file="site_fidelity/random_walk_results.txt",append=T)
+    vect<-c(animal,relocs,round(c(r2.true,mean.r2,mc.r2$pvalue,prop.r2.gt,lin.true,mean.lin,mc.lin$pvalue,prop.lin.gt),7))
+    dat.out[1,]<-vect
+    write.table(dat.out,file="site_fidelity/random_walk_results.txt", col.names = FALSE, append = T, row.names = FALSE)
+    #capture.output(vect,file="site_fidelity/random_walk_results.txt",append=T)
     lines(track.t$x,track.t$y,col="black", lwd = 3)
     
     dev.off()
